@@ -1,0 +1,85 @@
+﻿@page "/posts"
+@inject IPostsService PostsService 
+@inject ITagsService TagsService
+
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3>Posts</h3>
+    </div>
+    <div class="card-body">
+        @foreach (var post in posts)
+        {
+            <div class="mb-3 row">
+                <div class="col">
+                    @post.Id @post.name @post.tags.Count
+                </div>
+                <div class="col">
+                    <button class="btn btn-light" @onclick="()=>удалитьTags(post, post.tags.FirstOrDefault())">Удалить 1 тег</button>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="card-footer">
+        <div class="form-group">
+            <input class="form-control mb-2" @bind="newPost.name" placeholder="name" />
+            <input class="form-control mb-2" @bind="newPost.text" placeholder="text" />
+            <button class="btn btn-light" @onclick="()=>создатьPost(newPost)">Создать</button>
+        </div>
+    </div>    
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Tags</h3>
+    </div>
+    <div class="card-body">
+        @foreach (var tag in tags)
+        {
+            <div class="mb-3">
+                @tag.Id @tag.text @tag.posts.Count
+            </div>
+        }
+    </div>
+    <div class="card-footer">
+        <div class="form-group">
+            <input class="form-control mb-2" @bind="newTag.text" placeholder="text" />
+            <button class="btn btn-light" @onclick="()=>создатьTag(newTag)">Создать</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    List<post> posts = new List<post>();
+    List<tag> tags = new List<tag>();
+
+    post newPost = new post();
+    tag newTag = new tag();
+
+    protected override void OnInitialized()
+    {
+        posts = PostsService.posts();
+        tags = TagsService.tags();
+    }
+
+    void создатьPost(post post)
+    {
+        post.tags.Add(newTag);
+        PostsService.create(post);
+        posts.Add(post);
+        newPost = new post();
+    }
+
+    void создатьTag(tag tag)
+    {
+        TagsService.create(tag);
+        tags.Add(tag);
+        newTag = new tag();
+    }
+
+    void удалитьTags(post post, tag tag)
+    {
+        post.tags.Remove(tag);
+        PostsService.update(post);
+    }
+}
